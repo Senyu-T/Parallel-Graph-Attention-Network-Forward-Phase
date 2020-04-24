@@ -11,6 +11,7 @@
 
 //#define NUM_HEAD 5      // number of heads = 5
 #define ALPHA 0.2         // alpha for leakyRelu
+#define MAXLINE 1024      // reading file max length
 
 typedef struct {
     int nnode;
@@ -46,4 +47,5 @@ double lrelu(double x, double alpha);
 double *concat_weights(double *weight_a, double *weight_b, int size);
 param_t *param_init(int in_feature, int out_feature, int nnode, int nedge);
 layer_t *layer_init(int in_feature, int out_feature, int nnode, int nedge, int nhead);
+graph_t *new_graph(int node, int edge, int feat);
 graph_t *read_graph(FILE *infile);

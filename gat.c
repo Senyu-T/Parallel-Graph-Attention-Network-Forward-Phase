@@ -20,7 +20,6 @@
 // forward for one layer
 void forward(layer_t *L, graph_t *g) {
     int nnode = g->nnode;
-    int nedge = g->nedge;
     int nhead = L->num_heads;
     int *neighbor = g->neighbor;
     int *neighbor_start = g->neighbor_start;
@@ -29,7 +28,6 @@ void forward(layer_t *L, graph_t *g) {
     int in = L->params[0]->in_feature;
 
     // output new embedding with size (nnode, out_feature * nhead)
-    int multi_out = out * nhead;     // after concatenation
     double **multi_new_embedding = calloc(sizeof(double *), nnode);
 
     for (int headid = 0; headid < nhead; headid++) {
