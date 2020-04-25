@@ -7,10 +7,11 @@ class forward_layer:
         self.features = []
         self.a = a #length 2*out_features
         self.W = weights
+
         self.nnode = 0
         self.nnedge = 0
         self.nfeature = 0
-        self.out_features = 0
+        self.out_features = len(self.a) // 2
         self.heads = heads
         self.results = []
 
@@ -28,7 +29,6 @@ class forward_layer:
         self.nnode = int(l[0])
         self.nnedge = int(l[1])
         self.nfeature = int(l[2])
-        self.out_features = int(l[3])
 
         for i in range(self.nnode):
             cur_line = f.readline()
