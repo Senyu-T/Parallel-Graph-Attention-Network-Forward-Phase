@@ -10,17 +10,18 @@ class forward_layer:
 
         tmp_a = np.transpose(a)
         tmp_a = tmp_a.tolist()
-        self.a = torch.FloatTensor(tmp_a) #length 2*out_features
+        self.a = torch.FloatTensor(tmp_a) #length = 2*out_features
 
         tmp_w = np.transpose(weights)
         tmp_w = tmp_w.tolist()
-        self.W = torch.FloatTensor(tmp_w)
+        self.W = torch.FloatTensor(tmp_w) #Weight matrix, here the dimension is R*R'
 
         self.nnode = 0
         self.nnedge = 0
         self.nfeature = 0
-        self.out_features = len(self.a) // 2
         self.nheads = heads
+        self.out_features = len(self.a) // 2 #number of out features
+
         self.results = []
         self.leakyrelu = nn.LeakyReLU(alpha)
 
@@ -39,6 +40,7 @@ class forward_layer:
         self.nnedge = int(l[1])
         self.nfeature = int(l[2])
 
+        #read in the adjcency matrix
         for i in range(self.nnode):
             cur_line = f.readline()
             l_list = cur_line.split(" ")
@@ -47,6 +49,7 @@ class forward_layer:
                 new_f.append(int(sf))
             self.adj.append(new_f)
 
+        #read in the features
         for i in range(self.nnode):
             cur_line = f.readline()
             l_list = cur_line.split(" ")
@@ -56,17 +59,17 @@ class forward_layer:
             self.features.append(new_f)
 
 
-
         self.features = torch.FloatTensor(self.features)
         self.adj = torch.IntTensor(self.adj)
         return
 
     def forward(self):
         for i in range(self.nheads):
-
+            #step 1
             h = torch.mm(self.features, self.W)
             N = h.size()[0]
 
+            #step 2
             a_input = torch.cat([h.repeat(1, N).view(N * N, -1), h.repeat(N, 1)], dim=1).view(N, -1, 2 * self.out_features)
 
             e = self.leakyrelu(torch.matmul(a_input, self.a).squeeze(2))
@@ -75,6 +78,7 @@ class forward_layer:
             attention = torch.where(self.adj > 0, e, zero_vec)
             attention = F.softmax(attention, dim=1)
 
+            #step 3
             h_prime = torch.matmul(attention, h)
             self.results.append(h_prime)
 
