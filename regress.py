@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class forward_layer:
-    def __init__(self, a, weights, heads, alpha=1):
+    def __init__(self, a, weights, heads, alpha=0.2):
         self.adj = []
         self.features = []
 
@@ -12,9 +12,7 @@ class forward_layer:
         tmp_a = tmp_a.tolist()
         self.a = torch.FloatTensor(tmp_a) #length = 2*out_features
 
-        tmp_w = np.transpose(weights)
-        tmp_w = tmp_w.tolist()
-        self.W = torch.FloatTensor(tmp_w) #Weight matrix, here the dimension is R*R'
+        self.W = torch.FloatTensor(weights) #Weight matrix, here the dimension is R*R'
 
         self.nnode = 0
         self.nnedge = 0
@@ -69,6 +67,7 @@ class forward_layer:
             h = torch.mm(self.features, self.W)
             N = h.size()[0]
 
+
             #step 2
             a_input = torch.cat([h.repeat(1, N).view(N * N, -1), h.repeat(N, 1)], dim=1).view(N, -1, 2 * self.out_features)
 
@@ -91,9 +90,9 @@ class forward_layer:
 def check(input_file, c_output_file):
     #the c_output_file should consist of (nheads * nnode) * out_features
 
-    a = []
-    weights = []  # where should this be defined
-    nheads = 5
+    a = [[1, 2, 3, 4, 5, 6, 7, 8]]
+    weights = [[0.1, 0.2, 0.3, 0.21], [0.15, 0.25, 0.4, 0.34], [0.2, 0.3, 0.12, 0.80]]
+    nheads = 1
 
     #call the python implementation
     new_forward = forward_layer(a, weights, nheads)
@@ -104,31 +103,26 @@ def check(input_file, c_output_file):
     out_feature = new_forward.out_features
 
     output_file = open(c_output_file)
+    c_out = []
+    for i in range(nnode):
+        sl = output_file.readline().split()
+        l=[]
+        for j in range(nheads * out_feature):
+            l.append(round(float(sl[j]),4))
+        c_out.append(l)
 
     for hid in range(nheads):
         for nid in range(nnode):
-            string_l = output_file.readline().split(" ")
-            float_l = map(float, string_l)
-            ref = ref_res[hid][nid]
-
             for fid in range(out_feature):
-                if ref[fid] != float_l[fid]:
-                    print ("ERROR\n")
-                    break
+                if round(float(ref_res[hid][nid][fid]),4) != c_out[nid][hid*out_feature+fid]:
+                    print("ERROR, python gives value %f c gives value %f" %(ref_res[hid][nid][fid],c_out[nid][hid*out_feature+fid]))
 
 
 
 
 
-#out_feature = 3
-a = [[1,2,3,4,5,6]]
-weights = [[0.1, 0.2, 0.3],[0.15, 0.25, 0.4],[0.2, 0.3, 0.12]]
-nheads = 1
-new_forward = forward_layer(a, weights, nheads)
-new_forward.read_graph("data/simple_5_3.txt")
-ref_res = new_forward.forward()
-print(ref_res)
 
+check("data/simple_5_3.txt", "data/c_output.txt")
 
 
 

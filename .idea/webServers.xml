@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="0b821166-a9bf-4067-becc-04db06c357e4" name="unix.andrew" url="http://unix.andrew.cmu.edu">
+        <fileTransfer host="unix.andrew.cmu.edu" port="22" rootFolder="/afs/andrew.cmu.edu/usr7/yilel" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
