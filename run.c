@@ -1,40 +1,71 @@
 #include <string.h>
 #include <getopt.h>
+#include <omp.h>
 #include "gat.h"
 
+#define SEQ 0
+#define OMP 1
 int main(int argc, char *argv[]) {
     //char c;
-    FILE *gfile;
+    FILE *gfile, *lfile;
+    gfile = fopen("data/simple_5_3.txt", "r");
+    lfile = fopen("data/layer_2_3_4.txt", "r");
+    int thread_count = 1;
+    int check_correctness = 0;
 
-
-    if (argc >= 2) gfile = fopen(argv[1], "r");
-    else gfile = fopen("data/simple_5_3.txt", "r");
-
-    graph_t *g = read_graph(gfile);
-
-    FILE *lfile = fopen("data/simple_1_3_3_layer.txt", "r");
-    layer_t *new_layer = read_layer(lfile, g->nnode, g->nedge);
-    //read in weights, a, nhead
-
-//      int nheads = 5;
-//      int in = 3;
-//      int out = 3;
-//      layer_t *new_layer = layer_init(in, out, g->nnode, g->nedge, nheads); \\generate random weights and a
-    forward(new_layer, g);
-    int out = new_layer->params[0]->out_feature;
-
-
-
-    FILE *out_file = fopen("data/c_output.txt", "w+");
-    char tmp[50];
-    for (int i=0; i<g->nnode; i++){
-        for (int j=0; j<out; j++){
-            sprintf(tmp, "%lf ", g->features[i][j]);
-            fputs(tmp, out_file);
+    char *optstring = "f:l:t:c";
+    int c, out, nheads;
+    while((c = getopt(argc, argv, optstring)) != -1){
+        switch(c){
+            case 'f':
+                gfile = fopen(optarg, "r");
+                break;
+            case 'l':
+                lfile = fopen(optarg, "r");
+            case 't':
+                thread_count = atoi(optarg);
+                break;
+            case 'c':
+                check_correctness = 1;
+                break;
+            default:
+                abort();
         }
-        fputs("\n", out_file);
     }
 
+    omp_set_num_threads(thread_count);
+    graph_t *g = read_graph(gfile);
+
+    //read in weights, a, nhead
+    if (check_correctness){
+        layer_t *new_layer = read_layer(lfile, g->nnode, g->nedge);
+//        layer_t *new_layer = layer_init(in, out, g->nnode, g->nedge, nheads);
+        forward(new_layer, g);
+
+        int out = g->nfeature;
+        FILE *out_file = fopen("/afs/andrew.cmu.edu/usr7/yilel/private/15418/Parallel-Graph-Attention-Network-Forward-Phase/data/c_output.txt", "w+");
+        char tmp[50];
+        for (int i=0; i<g->nnode; i++){
+            for (int j=0; j<out; j++){
+                sprintf(tmp, "%lf ", g->features[i][j]);
+                fputs(tmp, out_file);
+            }
+            fputs("\n", out_file);
+        }
+    }else{
+        int in = g->nfeature;
+        out = in;
+        nheads = 1;
+
+        layer_t *new_layer = layer_init(in, out, g->nnode, g->nedge, nheads);
+        double start = omp_get_wtime(), diff;
+
+        forward(new_layer, g);
+
+        diff = omp_get_wtime() - start;
+
+        printf("Total time spent %f seconds\n", diff);
+    }
 
     return 0;
 }
