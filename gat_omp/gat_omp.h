@@ -40,8 +40,8 @@ typedef struct {
     double **weights;    // weight parameters (in_feature * out_feature)
     double **linear;     // featrues after linear transform. size (nnode, out_feat)
     double *a;           // self-attention parameters, size (2 * out_feature)
-    double *tmp_attn;   // exp(lrelu(a*(Wh_i||Wh_k))) for edge ik. size nedge+nnode
-    double *attentions;  // attention coefficients  nedge + nnode
+//    double *tmp_attn;   // exp(lrelu(a*(Wh_i||Wh_k))) for edge ik. size nedge+nnode
+//    double *attentions;  // attention coefficients  nedge + nnode
 } param_t;
 
 
@@ -53,11 +53,11 @@ typedef struct {
 void forward(layer_t *L, graph_t *G);
 double lrelu(double x, double alpha);
 double *concat_weights(double *weight_a, double *weight_b, int size);
-param_t *param_init(int in_feature, int out_feature, int nnode, int nedge);
-layer_t *layer_init(int in_feature, int out_feature, int nnode, int nedge, int nhead);
+param_t *param_init(int in_feature, int out_feature, int nnode);
+layer_t *layer_init(int in_feature, int out_feature, int nnode, int nhead);
 graph_t *new_graph(int node, int edge, int feat);
 graph_t *read_graph(FILE *infile);
-layer_t *read_layer(FILE *infile, int nnode, int nedge);
+layer_t *read_layer(FILE *infile, int nnode);
 
 
 #endif //PARALLEL_GRAPH_ATTENTION_NETWORK_FORWARD_PHASE_GAT_OMP_H

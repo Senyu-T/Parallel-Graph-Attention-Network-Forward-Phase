@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -32,6 +31,15 @@ void forward(layer_t *L, graph_t *g) {
     int BLOCKI_SIZE = (out >= 32) ? 32 : out;
     int BLOCKK_SIZE = (in >= 32) ? 32 : in;
 
+    double **tmp_attn = calloc(sizeof(double*), nnode);
+    double **linear_lr = calloc(sizeof(double*), nnode);
+    double *tmp_sum = calloc(sizeof(double), nnode);
+
+    for (int i=0; i<nnode; i++){
+        tmp_attn[i] = calloc(sizeof(double), nnode + 2*nedge);
+        linear_lr[i] = calloc(sizeof(double), 2);
+    }
+
 #pragma omp parallel
     {
 
@@ -57,42 +65,43 @@ void forward(layer_t *L, graph_t *g) {
             }
 //
             /* STEP 2: get attention coefficients */
-            double start = omp_get_wtime(), diff;
 
             double *self_attn = params[headid]->a;
-            //double *tmp_attn = params[headid]->tmp_attn;
-            double **tmp_attn = calloc(sizeof(double*), nnode);
-            for (int i=0; i<nnode; i++){
-                tmp_attn[i] = calloc(sizeof(double), nnode + 2*nedge);
-            }
-            //double *attentions = params[headid]->attentions;
+
 #pragma omp for
-            for (int nid = 0; nid < nnode; nid++) {
-
-                /* a * Wh_i */
+            for (int nid = 0; nid < nnode; nid++){
                 double left = 0;
-                for (int fid = 0; fid < out; fid++)
+                double right = 0;
+                for (int fid = 0; fid < out; fid++){
                     left += self_attn[fid] * linear[nid][fid];
+                    right += self_attn[fid+out] * linear[nid][fid];
+                }
+                linear_lr[nid][0] = left;
+                linear_lr[nid][1] = right;
+            }
 
+#pragma omp for schedule(dynamic, 64)
+            for (int nid = 0; nid < nnode; nid++){
+                double down = 0;
                 int nnid_s = neighbor_start[nid];
                 int nnid_e = neighbor_start[nid + 1];
-                /* fill tmp_attn with  exp(lrelu(a * (Wh_i || Wh_k) */
-                double down = 0;   // sum of all exp
-
-                for (int nnid = nnid_s; nnid < nnid_e; nnid++) {
-
+                for (int nnid = nnid_s; nnid < nnid_e; nnid++){
                     int neighbor_id = neighbor[nnid];
-                    double right = 0;
-                    for (int fid = 0; fid < out; fid++)
-                        right += self_attn[out + fid] * linear[neighbor_id][fid];
-                    tmp_attn[nid][nnid] = exp(lrelu(left + right, ALPHA));
+                    tmp_attn[nid][nnid] = exp(lrelu(linear_lr[nid][0] + linear_lr[neighbor_id][1], ALPHA));
                     down += tmp_attn[nid][nnid];
                 }
 
+                tmp_sum[nid] = down;
+            }
 
+#pragma omp for schedule(dynamic, 64)
+            for (int nid = 0; nid < nnode; nid++) {
+                int nnid_s = neighbor_start[nid];
+                int nnid_e = neighbor_start[nid + 1];
+                /* fill tmp_attn with  exp(lrelu(a * (Wh_i || Wh_k) */
                 /* get alpha_ij then step 3 */
                 for (int nnid = nnid_s; nnid < nnid_e; nnid++) {
-                    double attention = tmp_attn[nid][nnid] / down;
+                    double attention = tmp_attn[nid][nnid] / tmp_sum[nid];
                     for (int fid = 0; fid < out; fid++) {
                         int neighbor_id = neighbor[nnid];
                         /* STEP 3: get output embedding */
@@ -100,9 +109,6 @@ void forward(layer_t *L, graph_t *g) {
                     }
                 }
             }
-
-            diff = omp_get_wtime() - start;
-            printf("Total time jjj spent %f seconds\n", diff);
         }
     }
 
@@ -128,6 +134,3 @@ double *concat_weights(double *a, double *b, int size) {
     memcpy(concat + size, b, size * sizeof(double));
     return concat;
 }
-
-
-

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "gat.h"
+#include "gat_omp.h"
 
 
 /* take input file format :
@@ -57,7 +57,7 @@ graph_t *read_graph(FILE *infile) {
     // read adj matrix
     int eid = 0;
     for (int i = 0; i < nnode; i++) {
-        printf("node: %d\n", i);
+  //      printf("node: %d\n", i);
         int one_hot;
         g->neighbor_start[i] = eid;
         for (int j = 0; j < nnode; j++) {
@@ -65,10 +65,10 @@ graph_t *read_graph(FILE *infile) {
                 break;
             if (one_hot)
                 g->neighbor[eid++] = j;
-            printf("%d ", one_hot);
+    //        printf("%d ", one_hot);
         }
 
-        printf("\n\n\n");
+   //     printf("\n\n\n");
     }
     g->neighbor_start[nnode] = eid;
 
@@ -110,7 +110,7 @@ graph_t *read_graph(FILE *infile) {
 }
 
 /* init functions */
-param_t *param_init(int in, int out, int nnode, int nedge) {
+param_t *param_init(int in, int out, int nnode) {
     param_t *param = malloc(sizeof(param_t));
     param->in_feature = in;
     param->out_feature = out;
@@ -130,22 +130,22 @@ param_t *param_init(int in, int out, int nnode, int nedge) {
     for (int i = 0; i < 2 * out; i++)
         param->a[i] = ((double)rand()) / RAND_MAX;
 
-    param->attentions = calloc(sizeof(double), nnode + nedge*2);
-    param->tmp_attn = calloc(sizeof(double), nnode + nedge*2);
+//    param->attentions = calloc(sizeof(double), nnode + nedge*2);
+//    param->tmp_attn = calloc(sizeof(double), nnode + nedge*2);
     return param;
 }
 
-layer_t *layer_init(int in, int out, int nnode, int nedge, int num_heads) {
+layer_t *layer_init(int in, int out, int nnode, int num_heads) {
     layer_t *layer = malloc(sizeof(layer));
     layer->num_heads = num_heads;
     layer->params = calloc(sizeof(param_t *), num_heads);
     for (int i = 0; i < num_heads; i++)
-        layer->params[i] = param_init(in, out, nnode, nedge);
+        layer->params[i] = param_init(in, out, nnode);
     return layer;
 }
 
 
-layer_t *read_layer(FILE *infile, int nnode, int nedge){
+layer_t *read_layer(FILE *infile, int nnode){
     if (!infile) {
         fprintf(stderr, "ERROR opening file\n");
         return NULL;
@@ -172,7 +172,7 @@ layer_t *read_layer(FILE *infile, int nnode, int nedge){
     layer -> params = params;
 
     for (int hid = 0; hid < nheads; hid++){
-        param_t *param = param_init(in_feature, out_feature, nnode, nedge);
+        param_t *param = param_init(in_feature, out_feature, nnode);
         for (int out = 0; out < 2*out_feature; out++){
             fscanf(infile, "%lf", &w);
             param->a[out] = w;

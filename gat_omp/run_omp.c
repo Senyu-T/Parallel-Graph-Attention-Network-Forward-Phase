@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
         lfile = fopen("/afs/andrew.cmu.edu/usr7/yilel/private/15418/Parallel-Graph-Attention-Network-Forward-Phase/data/layer_2_3_4.txt", "r");
 
         graph_t *g = read_graph(gfile);
-        layer_t *new_layer = read_layer(lfile, g->nnode, g->nedge);
+        layer_t *new_layer = read_layer(lfile, g->nnode);
 //        layer_t *new_layer = layer_init(in, out, g->nnode, g->nedge, nheads);
         forward(new_layer, g);
 
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
         out = in;
         nheads = 1;
 
-        layer_t *new_layer = layer_init(in, out, g->nnode, g->nedge, nheads);
+        layer_t *new_layer = layer_init(in, out, g->nnode, nheads);
         double start = omp_get_wtime(), diff;
 
         forward(new_layer, g);

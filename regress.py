@@ -141,8 +141,9 @@ def check(input_file, layer_file, c_output_file):
 
 
 
+if __name__ == "__main__":
+   check("data/simple_5_3.txt", "data/layer_2_3_4.txt", "data/c_output.txt")
 
-check("data/simple_5_3.txt", "data/layer_2_3_4.txt", "data/c_output.txt")
 
 
 
