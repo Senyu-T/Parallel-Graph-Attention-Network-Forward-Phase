@@ -3,8 +3,6 @@
 #include <omp.h>
 #include "gat.h"
 
-#define SEQ 0
-#define OMP 1
 int main(int argc, char *argv[]) {
     //char c;
     FILE *gfile, *lfile;

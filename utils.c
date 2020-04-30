@@ -57,7 +57,7 @@ graph_t *read_graph(FILE *infile) {
     // read adj matrix
     int eid = 0;
     for (int i = 0; i < nnode; i++) {
-        printf("node: %d\n", i);
+ //       printf("node: %d\n", i);
         int one_hot;
         g->neighbor_start[i] = eid;
         for (int j = 0; j < nnode; j++) {
@@ -65,10 +65,10 @@ graph_t *read_graph(FILE *infile) {
                 break;
             if (one_hot)
                 g->neighbor[eid++] = j;
-            printf("%d ", one_hot);
+ //           printf("%d ", one_hot);
         }
 
-        printf("\n\n\n");
+ //       printf("\n\n\n");
     }
     g->neighbor_start[nnode] = eid;
 
