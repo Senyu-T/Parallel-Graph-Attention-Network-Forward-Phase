@@ -33,7 +33,6 @@ int main(int argc, char *argv[]) {
         gfile = fopen("/afs/andrew.cmu.edu/usr7/yilel/private/15418/Parallel-Graph-Attention-Network-Forward-Phase/data/graph_64_100_64.txt", "r");
         lfile = fopen("/afs/andrew.cmu.edu/usr7/yilel/private/15418/Parallel-Graph-Attention-Network-Forward-Phase/data/layer_2_64_64.txt", "r");
 
-
         graph_t *g = read_graph(gfile);
         layer_t *new_layer = read_layer(lfile, g->nnode, g->nedge);
 //        layer_t *new_layer = layer_init(in, out, g->nnode, g->nedge, nheads);
