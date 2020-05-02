@@ -77,37 +77,12 @@ graph_t *read_graph(FILE *infile) {
                 g->neighbor[eid++] = j;
             //           printf("%d ", one_hot);
         }
-
-        //       printf("\n\n\n");
     }
 
     g->neighbor_start[nnode] = eid;
 
-//    for (int j=0; j<nnode; j++){
-//        printf("%d ", g->adj[j]);
-//    }
-//    for (int i=0; i<nnode; i++){
-//        for (int j=0; j<nnode; j++){
-//            printf("%d ", g->adj[i*nnode+j]);
-//        }
-//        printf("\n");
-//    }
-
-//    for (int k =0; k<nnode+nedge; k++){
-//            printf("%dm", g->neighbor[k]);
-//        }
-
 
     if (eid != nnode + 2 * nedge) fprintf(stderr, "sth wrong %d\n", eid);
-    /*
-    for (int i = 0; i < eid; i++) {
-        printf("%d ", g->neighbor[i]);
-    }
-    printf("\n");
-    for (int i = 0; i < nnode + 1; i++)
-        printf("%d ", g->neighbor_start[i]);
-    printf("\n");
-    */
 
     // read features
     for (int i = 0; i < nnode; i++) {
@@ -117,35 +92,14 @@ graph_t *read_graph(FILE *infile) {
         }
     }
 
-    /*
-    for (int i = 0; i < nnode; i++) {
-        for (int j = 0; j < nfeature; j++) {
-            printf("%lf ", g->features[i][j]);
-        }
-        printf("\n");
-    }
-    */
-
 
     return g;
 }
 
-/* init functions */
-param_t *param_init(int in, int out, int nnode, int nedge) {
-    param_t *param = (param_t *)malloc(sizeof(param_t));
-    param->in_feature = in;
-    param->out_feature = out;
-
-    return param;
-}
 
 layer_t *layer_init(int in, int out, int nnode, int nedge, int num_heads) {
     layer_t *layer = (layer_t *)malloc(sizeof(layer));
     layer->num_heads = num_heads;
-    layer->params = (param_t **)calloc(sizeof(param_t *), num_heads);
-    for (int i = 0; i < num_heads; i++)
-        layer->params[i] = param_init(in, out, nnode, nedge);
-
     layer->weights = (double *)calloc(sizeof(double), in*out*num_heads);
     for (int i=0; i<in*out*num_heads; i++){
         layer->weights[i] = ((double)rand()) / RAND_MAX;
@@ -154,6 +108,9 @@ layer_t *layer_init(int in, int out, int nnode, int nedge, int num_heads) {
     layer->a = (double *)calloc(sizeof(double), 2 * out * num_heads);
     for (int i = 0; i < 2 * out * num_heads; i++)
         layer->a[i] = ((double)rand()) / RAND_MAX;
+
+    layer->in_feature = in;
+    layer->out_feature = out;
 
     return layer;
 }
@@ -182,13 +139,12 @@ layer_t *read_layer(FILE *infile, int nnode, int nedge){
 
     layer_t *layer = (layer_t *)malloc(sizeof(layer_t));
     layer -> num_heads = nheads;
-    param_t **params = (param_t **)malloc(sizeof(param_t *) * nheads);
-    layer -> params = params;
     layer->weights = (double *)calloc(sizeof(double), in_feature * out_feature * nheads);
     layer->a = (double *)calloc(sizeof(double), 2 * out_feature * nheads);
+    layer->in_feature = in_feature;
+    layer->out_feature = out_feature;
 
     for (int hid = 0; hid < nheads; hid++){
-        param_t *param = param_init(in_feature, out_feature, nnode, nedge);
         for (int out = 0; out < 2*out_feature; out++){
             fscanf(infile, "%lf", &w);
             layer->a[hid*2*out_feature + out] = w;
@@ -200,7 +156,6 @@ layer_t *read_layer(FILE *infile, int nnode, int nedge){
             }
         }
 
-        layer->params[hid] = param;
     }
 
     return layer;

@@ -155,8 +155,8 @@ void forward(layer_t *L, graph_t *g) {
     int nhead = L->num_heads;
     int *neighbor = g->neighbor;
     int *neighbor_start = g->neighbor_start;
-    int out = L->params[0]->out_feature;
-    int in = L->params[0]->in_feature;
+    int out = L->out_feature;
+    int in = L->in_feature;
 
 //Step 1, compute h*W, all heads are computed together
     double *device_linear;

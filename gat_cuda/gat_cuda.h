@@ -34,23 +34,18 @@ typedef struct {
 } graph_t;
 
 
-typedef struct {
-    int in_feature;
-    int out_feature;
-} param_t;
-
 
 typedef struct {
     int num_heads;        // K, number of heads in multi-head computation
-    param_t **params;     // K sets of params
     double *weights;    // weight parameters (in_feature * out_feature * nheads)
     double *a;
+    int in_feature;
+    int out_feature;
 } layer_t;
 
 void forward(layer_t *L, graph_t *G);
 double lrelu(double x, double alpha);
 double *concat_weights(double *weight_a, double *weight_b, int size);
-param_t *param_init(int in_feature, int out_feature, int nnode, int nedge);
 layer_t *layer_init(int in_feature, int out_feature, int nnode, int nedge, int nhead);
 graph_t *new_graph(int node, int edge, int feat);
 graph_t *read_graph(FILE *infile);
