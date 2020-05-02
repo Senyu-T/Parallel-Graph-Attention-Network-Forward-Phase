@@ -134,15 +134,18 @@ def check(input_file, layer_file, c_output_file):
     for hid in range(nheads):
         for nid in range(nnode):
             for fid in range(out_feature):
-                if round(float(ref_res[hid][nid][fid]), 3) != round(c_out[nid][hid * out_feature + fid],3):
+                x = round(float(ref_res[hid][nid][fid]), 3)
+                y = round(c_out[nid][hid * out_feature + fid], 3)
+                if x!=y and x!=round(y+0.001,3) and x!=round(y-0.001,3):
                     print("ERROR, python gives value %f c gives value %f" % (
-                    ref_res[hid][nid][fid], c_out[nid][hid * out_feature + fid]))
+                        x, y))
+
 
 
 
 
 if __name__ == "__main__":
-   check("data/simple_5_3.txt", "data/layer_2_3_4.txt", "data/c_output.txt")
+    check("data/graph_64_100_64.txt", "data/layer_2_64_64.txt", "data/c_output.txt")
 
 
 

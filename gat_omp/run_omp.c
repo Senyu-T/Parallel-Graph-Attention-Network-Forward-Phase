@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
         graph_t *g = read_graph(gfile);
         int in = g->nfeature;
         out = in;
-        nheads = 1;
+        nheads = 2;
 
         layer_t *new_layer = layer_init(in, out, g->nnode, nheads);
         double start = omp_get_wtime(), diff;

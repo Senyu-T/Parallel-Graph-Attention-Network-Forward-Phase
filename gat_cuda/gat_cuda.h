@@ -29,24 +29,22 @@ typedef struct {
     int *neighbor;       // adjacency lists, length = nedge + nnode
     int *neighbor_start; // starting index for each adjacency list. nnode + 1
 
-    double **features;   // size: nnode * nfeature
+    double *features;   // size: nnode * nfeature
+    int *adj;
 } graph_t;
 
 
 typedef struct {
     int in_feature;
     int out_feature;
-    double **weights;    // weight parameters (in_feature * out_feature)
-    double **linear;     // featrues after linear transform. size (nnode, out_feat)
-    double *a;           // self-attention parameters, size (2 * out_feature)
-    double *tmp_attn;   // exp(lrelu(a*(Wh_i||Wh_k))) for edge ik. size nedge+nnode
-    double *attentions;  // attention coefficients  nedge + nnode
 } param_t;
 
 
 typedef struct {
     int num_heads;        // K, number of heads in multi-head computation
     param_t **params;     // K sets of params
+    double *weights;    // weight parameters (in_feature * out_feature * nheads)
+    double *a;
 } layer_t;
 
 void forward(layer_t *L, graph_t *G);

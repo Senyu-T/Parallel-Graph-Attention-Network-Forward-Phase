@@ -30,8 +30,9 @@ int main(int argc, char *argv[]) {
 
     //read in weights, a, nhead
     if (check_correctness){
-        gfile = fopen("/afs/andrew.cmu.edu/usr7/yilel/private/15418/Parallel-Graph-Attention-Network-Forward-Phase/data/simple_5_3.txt", "r");
-        lfile = fopen("/afs/andrew.cmu.edu/usr7/yilel/private/15418/Parallel-Graph-Attention-Network-Forward-Phase/data/layer_2_3_4.txt", "r");
+        gfile = fopen("/afs/andrew.cmu.edu/usr7/yilel/private/15418/Parallel-Graph-Attention-Network-Forward-Phase/data/graph_64_100_64.txt", "r");
+        lfile = fopen("/afs/andrew.cmu.edu/usr7/yilel/private/15418/Parallel-Graph-Attention-Network-Forward-Phase/data/layer_2_64_64.txt", "r");
+
 
         graph_t *g = read_graph(gfile);
         layer_t *new_layer = read_layer(lfile, g->nnode, g->nedge);

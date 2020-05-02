@@ -26,7 +26,7 @@ def generate(nnode, nedge, nfeature): #graph is undirected
     for i in range(nnode):
         l = []
         for j in range(nfeature):
-            u = random.uniform(0, 5.1)
+            u = random.uniform(0, 0.2)
             u = round(u, 2)
             l.append(u)
         R.append(l)

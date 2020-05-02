@@ -8,14 +8,14 @@ def generate(nheads, in_f, out_f):
         tmp_a = []
         tmp_w = []
         for j in range(2*out_f):
-            e = random.uniform(0,2)
+            e = random.uniform(0,0.2)
             tmp_a.append(round(e,2))
         a.append(tmp_a)
 
         for i in range(in_f):
             l = []
             for j in range(out_f):
-                e = random.uniform(0,5)
+                e = random.uniform(0,0.2)
                 l.append(round(e,2))
             tmp_w.append(l)
 

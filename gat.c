@@ -74,6 +74,7 @@ void forward(layer_t *L, graph_t *g) {
                 for (int fid = 0; fid < out; fid++)
                     right += self_attn[out + fid] * linear[neighbor_id][fid];
                 tmp_attn[nnid] = exp(lrelu(left + right, ALPHA));
+                //printf("%f\n", tmp_attn[nnid]);
                 down += tmp_attn[nnid];
             }
 

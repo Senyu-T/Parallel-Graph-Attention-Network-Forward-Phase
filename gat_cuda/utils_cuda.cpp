@@ -14,6 +14,8 @@
  *  |  feature vector, one-hot vector for each node for edge |
  */
 
+#define RM(r, c, width) ((r) * (width) + (c))
+
 graph_t *new_graph(int nnode, int nedge, int nfeature) {
     graph_t *g = (graph_t *)malloc(sizeof(graph_t));
     g->nnode = nnode;
@@ -21,9 +23,10 @@ graph_t *new_graph(int nnode, int nedge, int nfeature) {
     g->nfeature = nfeature;
     g->neighbor = (int *)calloc(sizeof(int), nnode + nedge*2);
     g->neighbor_start = (int *)calloc(sizeof(int), nnode + 1);
-    g->features = (double **)calloc(sizeof(double *), nnode);
-    for (int i = 0; i < nnode; i++)
-        g->features[i] = (double *)calloc(sizeof(double), nfeature);
+    g->features = (double *)calloc(sizeof(double), nnode*nfeature);
+    g->adj = (int*)calloc(sizeof(int), nnode * nnode);
+//    for (int i = 0; i < nnode; i++)
+//        g->features[i] = (double *)calloc(sizeof(double), nfeature);
     return g;
 }
 
@@ -57,7 +60,9 @@ graph_t *read_graph(FILE *infile) {
         return NULL;
     }
 
+
     graph_t *g = new_graph(nnode, nedge, nfeature);
+
     // read adj matrix
     int eid = 0;
     for (int i = 0; i < nnode; i++) {
@@ -67,6 +72,7 @@ graph_t *read_graph(FILE *infile) {
         for (int j = 0; j < nnode; j++) {
             if (!fscanf(infile, "%d", &one_hot))
                 break;
+            g->adj[i*nnode + j] = one_hot;
             if (one_hot)
                 g->neighbor[eid++] = j;
             //           printf("%d ", one_hot);
@@ -74,7 +80,18 @@ graph_t *read_graph(FILE *infile) {
 
         //       printf("\n\n\n");
     }
+
     g->neighbor_start[nnode] = eid;
+
+//    for (int j=0; j<nnode; j++){
+//        printf("%d ", g->adj[j]);
+//    }
+//    for (int i=0; i<nnode; i++){
+//        for (int j=0; j<nnode; j++){
+//            printf("%d ", g->adj[i*nnode+j]);
+//        }
+//        printf("\n");
+//    }
 
 //    for (int k =0; k<nnode+nedge; k++){
 //            printf("%dm", g->neighbor[k]);
@@ -95,7 +112,7 @@ graph_t *read_graph(FILE *infile) {
     // read features
     for (int i = 0; i < nnode; i++) {
         for (int j = 0; j < nfeature; j++) {
-            if (!fscanf(infile, "%lf", &g->features[i][j]))
+            if (!fscanf(infile, "%lf", &g->features[RM(i, j, nfeature)]))
                 break;
         }
     }
@@ -119,23 +136,6 @@ param_t *param_init(int in, int out, int nnode, int nedge) {
     param->in_feature = in;
     param->out_feature = out;
 
-    param->weights = (double **)calloc(sizeof(double *), in);
-    for (int i = 0; i < in; i++) {
-        param->weights[i] = (double *)calloc(sizeof(double), out);
-        for (int j = 0; j < out; j++)
-            param->weights[i][j] = ((double)rand()) / RAND_MAX;
-    }
-
-    param->linear = (double **)calloc(sizeof(double *), nnode);
-    for (int i = 0; i < nnode; i++)
-        param->linear[i] = (double *)calloc(sizeof(double), out);
-
-    param->a = (double *)calloc(sizeof(double), 2 * out);
-    for (int i = 0; i < 2 * out; i++)
-        param->a[i] = ((double)rand()) / RAND_MAX;
-
-    param->attentions = (double *)calloc(sizeof(double), nnode + nedge*2);
-    param->tmp_attn = (double *)calloc(sizeof(double), nnode + nedge*2);
     return param;
 }
 
@@ -145,6 +145,16 @@ layer_t *layer_init(int in, int out, int nnode, int nedge, int num_heads) {
     layer->params = (param_t **)calloc(sizeof(param_t *), num_heads);
     for (int i = 0; i < num_heads; i++)
         layer->params[i] = param_init(in, out, nnode, nedge);
+
+    layer->weights = (double *)calloc(sizeof(double), in*out*num_heads);
+    for (int i=0; i<in*out*num_heads; i++){
+        layer->weights[i] = ((double)rand()) / RAND_MAX;
+    }
+
+    layer->a = (double *)calloc(sizeof(double), 2 * out * num_heads);
+    for (int i = 0; i < 2 * out * num_heads; i++)
+        layer->a[i] = ((double)rand()) / RAND_MAX;
+
     return layer;
 }
 
@@ -174,17 +184,19 @@ layer_t *read_layer(FILE *infile, int nnode, int nedge){
     layer -> num_heads = nheads;
     param_t **params = (param_t **)malloc(sizeof(param_t *) * nheads);
     layer -> params = params;
+    layer->weights = (double *)calloc(sizeof(double), in_feature * out_feature * nheads);
+    layer->a = (double *)calloc(sizeof(double), 2 * out_feature * nheads);
 
     for (int hid = 0; hid < nheads; hid++){
         param_t *param = param_init(in_feature, out_feature, nnode, nedge);
         for (int out = 0; out < 2*out_feature; out++){
             fscanf(infile, "%lf", &w);
-            param->a[out] = w;
+            layer->a[hid*2*out_feature + out] = w;
         }
         for (int in = 0; in < in_feature; in++){
             for (int out = 0; out < out_feature; out++){
                 fscanf(infile, "%lf", &w);
-                param->weights[in][out] = w;
+                layer->weights[in*out_feature*nheads+hid*out_feature+out] = w;
             }
         }
 
