@@ -16,7 +16,7 @@
 int main(int argc, char *argv[]) {
     //char c;
     FILE *gfile, *lfile;
-    gfile = fopen("/afs/andrew.cmu.edu/usr7/yilel/private/15418/Parallel-Graph-Attention-Network-Forward-Phase/data/graph_2048_818176_2048.txt", "r");
+    gfile = fopen("/afs/andrew.cmu.edu/usr7/yilel/private/15418/Parallel-Graph-Attention-Network-Forward-Phase/data/graph_2688_5429_1472.txt", "r");
     int check_correctness = 0;
 
     char optstring[]= "f:l:t:c";
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
     }else{
         int in = g->nfeature;
         out = in;
-        nheads = 2;
+        nheads = 4;
 
         layer_t *new_layer = layer_init(in, out, g->nnode, g->nedge, nheads);
 
