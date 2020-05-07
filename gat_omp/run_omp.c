@@ -7,7 +7,7 @@
 int main(int argc, char *argv[]) {
     //char c;
     FILE *gfile, *lfile;
-    gfile = fopen("/afs/andrew.cmu.edu/usr7/yilel/private/15418/Parallel-Graph-Attention-Network-Forward-Phase/data/graph_2048_800000_2048.txt", "r");
+    gfile = fopen("/afs/andrew.cmu.edu/usr7/yilel/private/15418/Parallel-Graph-Attention-Network-Forward-Phase/data/graph_2048_818176_2048.txt", "r");
     lfile = fopen("/afs/andrew.cmu.edu/usr7/yilel/private/15418/Parallel-Graph-Attention-Network-Forward-Phase/data/simple_1_3_3_layer.txt", "r");
 
     int thread_count = 8;

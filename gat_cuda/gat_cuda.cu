@@ -219,7 +219,7 @@ void forward(layer_t *L, graph_t *g) {
     double *multi_new_embedding = (double *)calloc(sizeof(double), nnode * nhead * out);
 
     cudaMemcpy(multi_new_embedding, device_mult_new_embedding, nnode * nhead * out * sizeof(double), cudaMemcpyDeviceToHost);
-
+    cudaDeviceSynchronize();
     g->features = multi_new_embedding;
     g->nfeature = out * nhead;
 }

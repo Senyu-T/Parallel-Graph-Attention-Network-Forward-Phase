@@ -3,15 +3,35 @@ import sys, getopt
 
 def generate(nnode, nedge, nfeature): #graph is undirected
     S = set()
+    x = nedge*2 // nnode;
+    count_lits = [0 for i in range(nnode)]
+    remaining_node = set()
+    for i in range(nnode):
+        remaining_node.add(i)
+
     while (len(S) < nedge):
-        a = random.randint(0, nnode-1)
-        b = random.randint(0, nnode-1)
+        print(len(S))
+        remaining_node_list = list(remaining_node)
+        remaining_node_count = len(remaining_node_list)
+        a = remaining_node_list[random.randint(0, remaining_node_count-1)]
+        b = remaining_node_list[random.randint(0, remaining_node_count-1)]
+        if count_lits[a]>= x or count_lits[b]>=x:
+            continue
         if a == b:
+            continue
+        if (a,b) in S or (b,a) in S:
             continue
         if a < b:
             S.add((a, b))
         else:
             S.add((b, a))
+        count_lits[a] += 1
+        count_lits[b] += 1
+
+        if (count_lits[a]==x):
+            remaining_node.remove(a)
+        if (count_lits[b]==x):
+            remaining_node.remove(b)
 
     L = [[0 for i in range(nnode)] for j in range(nnode)]
     for s in S:
@@ -26,12 +46,12 @@ def generate(nnode, nedge, nfeature): #graph is undirected
     for i in range(nnode):
         l = []
         for j in range(nfeature):
-            u = random.uniform(0, 0.2)
+            u = random.uniform(0, 1)
             u = round(u, 2)
             l.append(u)
         R.append(l)
 
-    file_name = "data/graph_%d_%d_%d.txt" %(nnode, nedge, nfeature)
+    file_name = "data/regular_graph_%d_%d_%d.txt" %(nnode, nedge, nfeature)
     graph_file = open(file_name,"w")
 
     graph_file.write("%d %d %d\n" %(nnode, nedge, nfeature))
@@ -68,4 +88,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+    main(sys.argv[1:])

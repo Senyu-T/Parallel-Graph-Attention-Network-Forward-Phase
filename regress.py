@@ -10,6 +10,7 @@ class forward_layer:
 
         tmp_a = np.transpose(a)
         tmp_a = tmp_a.tolist()
+        self.la = a
         self.a = torch.FloatTensor(tmp_a) #length = 2*out_features
 
         self.W = torch.FloatTensor(weights) #Weight matrix, here the dimension is R*R'
@@ -43,7 +44,8 @@ class forward_layer:
             l_list = cur_line.split(" ")
             new_f = []
             for sf in l_list:
-                new_f.append(int(sf))
+                if sf != '\n':
+                    new_f.append(int(sf))
             self.adj.append(new_f)
 
         #read in the features
@@ -52,7 +54,8 @@ class forward_layer:
             l_list = cur_line.split(" ")
             new_f = []
             for sf in l_list:
-                new_f.append(float(sf))
+                if sf != '\n':
+                    new_f.append(float(sf))
             self.features.append(new_f)
 
 
@@ -62,6 +65,24 @@ class forward_layer:
 
     def forward(self):
         h = torch.mm(self.features, self.W)
+        #
+        # linear_lr = []
+        # for i in range(self.nnode):
+        #     left = 0.0
+        #     right = 0.0
+        #     l = []
+        #     for j in range(self.out_features):
+        #         left += float(h[i][j]) * self.la[0][j]
+        #         right += float(h[i][j]) * self.la[0][j+self.out_features]
+        #     l.append(left)
+        #     l.append(right)
+        #     linear_lr.append(l)
+        # print(linear_lr)
+        #
+
+
+
+
         N = h.size()[0]
 
         # step 2
@@ -76,6 +97,7 @@ class forward_layer:
         # step 3
         h_prime = torch.matmul(attention, h)
         #self.results.append(h_prime)
+
 
         return h_prime
 
@@ -96,7 +118,7 @@ def check(input_file, layer_file, c_output_file):
     for i in range(nheads):
         tmp_a = []
         tmp_w = []
-        cur_line = lf.readline().split()
+        #cur_line = lf.readline().split()
         for j in range(2 * out_f):
             tmp_a.append(float(cur_line[j]))
         a.append([tmp_a])
@@ -143,9 +165,8 @@ def check(input_file, layer_file, c_output_file):
 
 
 
-
 if __name__ == "__main__":
-    check("data/graph_64_100_64.txt", "data/layer_2_64_64.txt", "data/c_output.txt")
+    check("data/graph_2048_818176_2048.txt", "data/layer_2_2048_2048.txt", "data/c_output.txt")
 
 
 
