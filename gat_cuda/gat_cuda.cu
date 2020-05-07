@@ -56,12 +56,19 @@ cudaLinearlrKernel(int nnode, int nheads, int out, double *linear, double *a, do
     int j = blockIdx.x * blockDim.x + threadIdx.x;
 
     int hid = blockIdx.x;
+    __shared__ float shared_linear[LSIZE];
+
+    for (int k=0; k<LBLK*2/LSIZE; k++){
+        shared_linear[LBLK*2/LSIZE*k+i] = linear[LBLK*2/LSIZE*k+i];
+    }
+
+    __syncthreads();
 
     double sum = 0;
     for (int k=0; k<out; k++){
         int l_idx = i * nheads * out + hid * out + k;
         int a_idx = hid * out * 2 + k + threadIdx.x * out;
-        sum += linear[l_idx] * a[a_idx];
+        sum += shared_linear[l_idx] * a[a_idx];
     }
     linear_lr[i * nheads * 2 + j] = sum;
 
